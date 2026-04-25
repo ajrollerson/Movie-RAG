@@ -24,8 +24,6 @@ def main() -> None:
             inverted_index = InvertedIndex()
             inverted_index.build()
             inverted_index.save()
-            docs = inverted_index.get_documents("merida")
-            print(f"First document for token 'merida' = {docs[0]}")
 
         case _:
             parser.print_help()

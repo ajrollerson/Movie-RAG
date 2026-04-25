@@ -20,17 +20,23 @@ def prepare_tokens(text):
     return filtered_tokens
 
 def search_command(query):
-    movies = load_movies()
-    results = []
-    for movie in movies:
-        clean_movie_title = prepare_tokens(movie["title"])
-        clean_query = prepare_tokens(query)
-        for query_token in clean_query:
-            for title_token in clean_movie_title:
-                if query_token in title_token:
-                    results.append(movie)
-                    break
-    return results[:5]
+    try:
+        inverted_index = InvertedIndex()
+        inverted_index.load()
+        tokens = prepare_tokens(query)
+        search_results = []
+        for token in tokens:
+            if len(search_results) >= 5:
+                break
+            for doc_id in sorted(inverted_index.get_documents(token)):
+                if doc_id in inverted_index.docmap:
+                    search_results.append({"id": doc_id, "title": inverted_index.docmap[doc_id]["title"]})
+                    if len(search_results) >= 5:
+                        break
+    except FileNotFoundError:
+        print("File not found!")
+        return []
+    return search_results
 
 class InvertedIndex:
     def __init__(self):
@@ -61,4 +67,14 @@ class InvertedIndex:
         docmap_path = os.path.join(CACHE_DIR, "docmap.pkl")
         with open(docmap_path, "wb") as f:
             pickle.dump(self.docmap, f)
+
+    def load(self):
+        index_path = os.path.join(CACHE_DIR, "index.pkl")
+        docmap_path = os.path.join(CACHE_DIR, "docmap.pkl")
+        if not os.path.exists(index_path) or not os.path.exists(docmap_path) :
+            raise FileNotFoundError
+        with open(index_path, "rb") as f:
+            self.index = pickle.load(f)
+        with open(docmap_path, "rb") as f:
+            self.docmap = pickle.load(f)
 
