@@ -1,5 +1,6 @@
 import argparse
-from lib.keyword_search import search_command, InvertedIndex
+import math
+from lib.keyword_search import search_command, prepare_tokens, InvertedIndex
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
@@ -13,6 +14,8 @@ def main() -> None:
 
     subparsers.add_parser("build", help="Build the inverted index")
 
+    idf_parser = subparsers.add_parser("idf", help="Get inverse document frequency")
+    idf_parser.add_argument("term", type=str, help="Search term")
 
     args = parser.parse_args()
 
@@ -33,9 +36,16 @@ def main() -> None:
             inverted_index = InvertedIndex()
             inverted_index.load()
             print(inverted_index.get_tf(args.doc_id, args.term))
-            
-        
 
+        case "idf":
+            inverted_index = InvertedIndex()
+            inverted_index.load()
+            total_doc_count = len(inverted_index.docmap)
+            search_term = prepare_tokens(args.term)[0]
+            term_match_doc_count = len(inverted_index.index.get(search_term, []))
+            idf = math.log((total_doc_count + 1) / (term_match_doc_count + 1))
+            print(f"Inverse document frequency of '{args.term}': {idf:.2f}")
+            
         case _:
             parser.print_help()
 

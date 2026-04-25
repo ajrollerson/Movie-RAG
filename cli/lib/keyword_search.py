@@ -12,7 +12,7 @@ stemmer = PorterStemmer()
 
 
 def prepare_tokens(text):
-    tokens = text.translate(clear_punctuation).lower().split(" ")
+    tokens = text.translate(clear_punctuation).lower().split()
     filtered_tokens = []
     for token in tokens:
         if token and token not in stopwords:
