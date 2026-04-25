@@ -3,7 +3,7 @@ import string
 import os
 import pickle
 from .search_utils import load_movies, load_stopwords, CACHE_DIR
-from collections import defaultdict
+from collections import defaultdict, Counter
 from nltk.stem import PorterStemmer
 
 clear_punctuation = str.maketrans("", "", string.punctuation)
@@ -42,11 +42,13 @@ class InvertedIndex:
     def __init__(self):
         self.index = defaultdict(set)
         self.docmap = {}
+        self.term_frequencies = defaultdict(Counter)
 
     def __add_document(self, doc_id, text):
         tokens = prepare_tokens(text)
         for token in tokens: 
             self.index[token].add(doc_id)
+            self.term_frequencies[doc_id][token] += 1
 
     def get_documents(self, term):
         doc_ids = self.index.get(term.lower(), set())
@@ -67,14 +69,26 @@ class InvertedIndex:
         docmap_path = os.path.join(CACHE_DIR, "docmap.pkl")
         with open(docmap_path, "wb") as f:
             pickle.dump(self.docmap, f)
+        tf_path = os.path.join(CACHE_DIR, "term_frequencies.pkl")
+        with open(tf_path, "wb") as f:
+            pickle.dump(self.term_frequencies, f)
 
     def load(self):
         index_path = os.path.join(CACHE_DIR, "index.pkl")
         docmap_path = os.path.join(CACHE_DIR, "docmap.pkl")
-        if not os.path.exists(index_path) or not os.path.exists(docmap_path) :
+        tf_path = os.path.join(CACHE_DIR, "term_frequencies.pkl")
+        if not os.path.exists(index_path) or not os.path.exists(docmap_path) or not os.path.exists(tf_path):
             raise FileNotFoundError
         with open(index_path, "rb") as f:
             self.index = pickle.load(f)
         with open(docmap_path, "rb") as f:
             self.docmap = pickle.load(f)
+        with open(tf_path, "rb") as f:
+            self.term_frequencies = pickle.load(f)
+    
+    def get_tf(self, doc_id, term):
+        search_term = prepare_tokens(term)
+        if len(search_term) != 1:
+            raise Exception("More than one candidate term found!")
+        return self.term_frequencies[doc_id][search_term[0]]
 
