@@ -1,6 +1,7 @@
 import json
 import string
 import os
+import math
 import pickle
 from .search_utils import load_movies, load_stopwords, CACHE_DIR
 from collections import defaultdict, Counter
@@ -37,6 +38,12 @@ def search_command(query):
         print("File not found!")
         return []
     return search_results
+
+def bm25_idf_command(term):
+    inverted_index = InvertedIndex()
+    inverted_index.load()
+    return inverted_index.get_bm25_idf(term)
+
 
 class InvertedIndex:
     def __init__(self):
@@ -91,4 +98,14 @@ class InvertedIndex:
         if len(search_term) != 1:
             raise Exception("More than one candidate term found!")
         return self.term_frequencies[doc_id][search_term[0]]
+    
+    def get_bm25_idf(self, term: str) -> float:
+        tdc = len(self.docmap)
+        tokens = prepare_tokens(term)
+        if len(tokens) != 1:
+            raise Exception("Term must be a single token!")
+        df = len(self.index.get(tokens[0], []))
+        idf = math.log((tdc - df + 0.5) / (df + 0.5) + 1)
+        return idf
+
 
