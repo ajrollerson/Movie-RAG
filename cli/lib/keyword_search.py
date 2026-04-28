@@ -3,7 +3,7 @@ import string
 import os
 import math
 import pickle
-from lib.constants import BM25_K1, BM25_B
+from lib.constants import BM25_K1, BM25_B, LIMIT
 from .search_utils import load_movies, load_stopwords, CACHE_DIR
 from collections import defaultdict, Counter
 from nltk.stem import PorterStemmer
@@ -134,5 +134,22 @@ class InvertedIndex:
         length_norm =  1 - b + b * (self.doc_lengths[doc_id] / self.__get_avg_doc_length())
         tf = self.get_tf(doc_id, term)
         return (tf * (k1 + 1) / (tf + k1 * length_norm))
+    
+    def bm25(self, doc_id, term):
+        return self.get_bm25_tf(doc_id, term) * self.get_bm25_idf(term)
 
-
+    def bm25_search(self, query, limit=LIMIT):
+        query_tokens = prepare_tokens(query)
+        scores = {}
+        for doc_id in self.docmap:
+            total_score = 0
+            for token in query_tokens:
+                total_score += self.bm25(doc_id, token)
+            scores[doc_id] = total_score
+        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        top_scores = sorted_scores[:limit]
+        search_results = []
+        for doc_id, score in top_scores:
+            movie = self.docmap[doc_id]
+            search_results.append({"doc_id": doc_id, "title": movie["title"], "score": score})
+        return search_results
