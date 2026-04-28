@@ -3,6 +3,7 @@ import string
 import os
 import math
 import pickle
+from lib.constants import BM25_K1
 from .search_utils import load_movies, load_stopwords, CACHE_DIR
 from collections import defaultdict, Counter
 from nltk.stem import PorterStemmer
@@ -44,6 +45,10 @@ def bm25_idf_command(term):
     inverted_index.load()
     return inverted_index.get_bm25_idf(term)
 
+def bm25_tf_command(doc_id, term, k1=BM25_K1):
+    inverted_index = InvertedIndex()
+    inverted_index.load()
+    return inverted_index.get_bm25_tf(doc_id, term, k1=BM25_K1)
 
 class InvertedIndex:
     def __init__(self):
@@ -107,5 +112,9 @@ class InvertedIndex:
         df = len(self.index.get(tokens[0], []))
         idf = math.log((tdc - df + 0.5) / (df + 0.5) + 1)
         return idf
+    
+    def get_bm25_tf(self, doc_id, term, k1=BM25_K1):
+        tf = self.get_tf(doc_id, term)
+        return (tf * (k1 + 1) / (tf + k1))
 
 
