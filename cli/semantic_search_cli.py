@@ -20,6 +20,10 @@ def main():
     search_parser.add_argument("query", type=str, help="Search query")
     search_parser.add_argument("--limit", type=int, default=5)
 
+    chunk_parser = subparsers.add_parser("chunk", help="Searchs for semantically related movies")
+    chunk_parser.add_argument("text", type=str, help="Text to chunk")
+    chunk_parser.add_argument("--chunk-size", type=int, default=200)
+
     args = parser.parse_args()
 
     match args.command:
@@ -40,6 +44,17 @@ def main():
             semantic_search.load_or_create_embeddings(load_movies())
             for i, result in enumerate(semantic_search.search(args.query, args.limit), start=1):
                 print(f"{i}. {result['title']} (score: {result['score']:.4f})\n{result['description'][:100]}")
+
+        case "chunk":
+            words = args.text.split()
+            chunks = []
+            for i in range(0, len(words), args.chunk_size):
+                chunks.append(words[i:i + args.chunk_size])
+
+            print(f"Chunking {len(args.text)} characters")
+            for index, chunk in enumerate(chunks, start=1):
+                print(f"{index}. {' '.join(chunk)}")
+
 
         case _:
             parser.print_help()
