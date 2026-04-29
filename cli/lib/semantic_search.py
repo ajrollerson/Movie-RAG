@@ -22,6 +22,13 @@ def verify_embeddings():
     print(f"Number of docs:   {len(documents)}")
     print(f"Embeddings shape: {embeddings.shape[0]} vectors in {embeddings.shape[1]} dimensions")
 
+def embed_query_text(query):
+    semantic_search = SemanticSearch()
+    embedding = semantic_search.generate_embedding(query)
+    print(f"Query: {query}")
+    print(f"First 3 dimensions: {embedding[:3]}")
+    print(f"Shape: {embedding.shape}")
+
 class SemanticSearch:
     def __init__(self):
         self.model = SentenceTransformer('all-MiniLM-L6-v2')
