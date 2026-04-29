@@ -3,6 +3,8 @@
 import argparse
 from lib.semantic_search import verify_model, embed_text, verify_embeddings, embed_query_text, SemanticSearch
 from lib.search_utils import load_movies
+import re
+
 def main():
     parser = argparse.ArgumentParser(description="Semantic Search CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -20,10 +22,15 @@ def main():
     search_parser.add_argument("query", type=str, help="Search query")
     search_parser.add_argument("--limit", type=int, default=5)
 
-    chunk_parser = subparsers.add_parser("chunk", help="Searchs for semantically related movies")
+    chunk_parser = subparsers.add_parser("chunk", help="Chunks input text")
     chunk_parser.add_argument("text", type=str, help="Text to chunk")
     chunk_parser.add_argument("--chunk-size", type=int, default=200)
     chunk_parser.add_argument("--overlap", type=int, default=1)
+
+    semantic_chunk_parser = subparsers.add_parser("semantic_chunk", help="Chunks input sentences")
+    semantic_chunk_parser.add_argument("text", type=str, help="Text to chunk")
+    semantic_chunk_parser.add_argument("--max-chunk-size", type=int, default=4)
+    semantic_chunk_parser.add_argument("--overlap", type=int, default=0)
 
     args = parser.parse_args()
 
@@ -56,10 +63,24 @@ def main():
                 if i + args.chunk_size >= len(words):             
                     break
                 i += args.chunk_size - args.overlap
-            
 
             print(f"Chunking {len(args.text)} characters")
             for index, chunk in enumerate(chunks, start=1):
+                print(f"{index}. {' '.join(chunk)}")
+
+        case "semantic_chunk":
+            sentences = re.split(r"(?<=[.!?])\s+", args.text)
+            sentence_chunks = []
+            i = 0
+            while i < len(sentences):               
+                chunk = sentences[i:i + args.max_chunk_size]
+                sentence_chunks.append(chunk)
+                if i + args.max_chunk_size >= len(sentences):             
+                    break
+                i += args.max_chunk_size - args.overlap
+
+            print(f"Semantically chunking {len(args.text)} characters")
+            for index, chunk in enumerate(sentence_chunks, start=1):
                 print(f"{index}. {' '.join(chunk)}")
 
 
