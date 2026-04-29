@@ -23,6 +23,7 @@ def main():
     chunk_parser = subparsers.add_parser("chunk", help="Searchs for semantically related movies")
     chunk_parser.add_argument("text", type=str, help="Text to chunk")
     chunk_parser.add_argument("--chunk-size", type=int, default=200)
+    chunk_parser.add_argument("--overlap", type=int, default=1)
 
     args = parser.parse_args()
 
@@ -48,8 +49,14 @@ def main():
         case "chunk":
             words = args.text.split()
             chunks = []
-            for i in range(0, len(words), args.chunk_size):
-                chunks.append(words[i:i + args.chunk_size])
+            i = 0
+            while i < len(words):               
+                chunk = words[i:i + args.chunk_size]
+                chunks.append(chunk)
+                if i + args.chunk_size >= len(words):             
+                    break
+                i += args.chunk_size - args.overlap
+            
 
             print(f"Chunking {len(args.text)} characters")
             for index, chunk in enumerate(chunks, start=1):
