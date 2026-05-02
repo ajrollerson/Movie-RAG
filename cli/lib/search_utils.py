@@ -17,3 +17,15 @@ def load_movies():
 def load_stopwords():
     with open(STOPWORD_PATH, "r") as f:
         return f.read().splitlines()
+    
+def normalize(scores):
+    if not scores:
+        return []
+    normalized = []
+    min_score = min(scores)
+    max_score = max(scores)
+    if max_score == min_score:
+        return [1.0] * len(scores)
+    for score in scores:
+        normalized.append((score - min_score) / (max_score - min_score))
+    return normalized
