@@ -44,15 +44,27 @@ def cosine_similarity(vec1, vec2):
     return dot_product / (norm1 * norm2)
 
 def semantic_chunk(text: str, max_chunk_size: int = 4, overlap: int = 0) -> list[str]:
-    sentences = re.split(r"(?<=[.!?])\s+", text)
+    txt = text.strip()
+    if not txt:
+        return []
+    sentences = re.split(r"(?<=[.!?])\s+", txt)
+    if len(sentences) == 1 and not txt.endswith((".","!","?")):
+        sentences = [txt]
     sentence_chunks = []
     i = 0
     while i < len(sentences):               
-        chunk = sentences[i:i + max_chunk_size]
-        chunk_string = " ".join(chunk)
-        sentence_chunks.append(chunk_string)
-        if i + max_chunk_size >= len(sentences):             
+        chunk = sentences[i : i + max_chunk_size]
+        if sentence_chunks and len(chunk) <= overlap:
             break
+
+        cleaned_sentences = []
+        for c in chunk:
+            stripped = c.strip()
+            if stripped:
+                cleaned_sentences.append(c.strip())
+    
+        if cleaned_sentences:
+            sentence_chunks.append(" ".join(cleaned_sentences))
         i += max_chunk_size - overlap
     return sentence_chunks
 

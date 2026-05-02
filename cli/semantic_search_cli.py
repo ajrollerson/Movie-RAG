@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse
-from lib.semantic_search import verify_model, embed_text, verify_embeddings, embed_query_text, SemanticSearch, ChunkedSemanticSearch
-from lib.search_utils import load_movies
 import re
+from lib.semantic_search import verify_model, embed_text, verify_embeddings, embed_query_text, semantic_chunk, SemanticSearch, ChunkedSemanticSearch
+from lib.search_utils import load_movies
+
 
 def main():
     parser = argparse.ArgumentParser(description="Semantic Search CLI")
@@ -75,19 +76,10 @@ def main():
                 print(f"{index}. {' '.join(chunk)}")
 
         case "semantic_chunk":
-            sentences = re.split(r"(?<=[.!?])\s+", args.text)
-            sentence_chunks = []
-            i = 0
-            while i < len(sentences):               
-                chunk = sentences[i:i + args.max_chunk_size]
-                sentence_chunks.append(chunk)
-                if i + args.max_chunk_size >= len(sentences):             
-                    break
-                i += args.max_chunk_size - args.overlap
-
+            sentence_chunks = semantic_chunk(args.text, args.max_chunk_size, args.overlap)
             print(f"Semantically chunking {len(args.text)} characters")
             for index, chunk in enumerate(sentence_chunks, start=1):
-                print(f"{index}. {' '.join(chunk)}")
+                print(f"{index}. {chunk}")
 
         case "embed_chunks":
             movies = load_movies()
