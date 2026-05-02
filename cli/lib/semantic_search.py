@@ -3,7 +3,7 @@ import numpy as np
 import os
 import re
 import json
-from .search_utils import load_movies
+from .search_utils import load_movies, SCORE_PRECISION
 from .constants import LIMIT
 
 
@@ -164,3 +164,20 @@ class ChunkedSemanticSearch(SemanticSearch):
                 "movie_idx": self.chunk_metadata[index]["movie_idx"],
                 "score": score
             })
+        movie_scores = {}
+        for chunk in chunk_score:
+            if chunk["movie_idx"] not in movie_scores or chunk["score"] > movie_scores[chunk["movie_idx"]]["score"]:
+                movie_scores[chunk["movie_idx"]] = chunk
+        sorted_movie_scores = sorted(movie_scores.items(), key=lambda x: x[1]["score"], reverse=True)
+        results = sorted_movie_scores[:limit]
+        formatted_results = []
+        for movie_idx, chunk in results:
+            doc = self.documents[movie_idx]
+            formatted_results.append({
+                "id": doc["id"],
+                "title": doc["title"],
+                "document": doc["description"][:100],        
+                "score": round(chunk["score"], SCORE_PRECISION),           
+                "metadata": doc.get("metadata") or {}       
+            })
+        return formatted_results
