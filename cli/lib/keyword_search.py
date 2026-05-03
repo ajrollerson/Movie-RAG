@@ -57,6 +57,7 @@ class InvertedIndex:
         self.term_frequencies = defaultdict(Counter)
         self.doc_lengths = {}
         self.doc_lengths_path = os.path.join(CACHE_DIR, "doc_lengths.pkl")
+        self.index_path = os.path.join(CACHE_DIR, "index.pkl")
 
     def __add_document(self, doc_id, text):
         tokens = prepare_tokens(text)
@@ -151,5 +152,5 @@ class InvertedIndex:
         search_results = []
         for doc_id, score in top_scores:
             movie = self.docmap[doc_id]
-            search_results.append({"doc_id": doc_id, "title": movie["title"], "score": score})
+            search_results.append({"id": doc_id, "title": movie["title"], "description": movie["description"], "score": score})
         return search_results

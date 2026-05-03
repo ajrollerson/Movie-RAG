@@ -188,7 +188,7 @@ class ChunkedSemanticSearch(SemanticSearch):
             formatted_results.append({
                 "id": doc["id"],
                 "title": doc["title"],
-                "document": doc["description"][:100],        
+                "description": doc["description"],        
                 "score": round(chunk["score"], SCORE_PRECISION),           
                 "metadata": doc.get("metadata") or {}       
             })

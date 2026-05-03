@@ -29,3 +29,10 @@ def normalize(scores):
     for score in scores:
         normalized.append((score - min_score) / (max_score - min_score))
     return normalized
+
+def normalize_results(results):
+    scores = [r["score"] for r in results]
+    normalized = normalize(scores)
+    for i, result in enumerate(results):
+        result["normalized_score"] = normalized[i]
+    return results
