@@ -2,3 +2,4 @@ BM25_K1 = 1.5
 BM25_B = 0.75
 LIMIT = 5
 ALPHA = 0.5
+K = 60
