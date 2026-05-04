@@ -1,6 +1,7 @@
 import argparse
 from lib.hybrid_search import HybridSearch
 from lib.search_utils import normalize, load_movies
+from lib.query_enhancement import llm_spell_check, llm_rewrite, llm_expand
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Hybrid Search CLI")
@@ -18,6 +19,7 @@ def main() -> None:
     rrf_search_parser.add_argument("query", type=str, help="Query text")
     rrf_search_parser.add_argument("-k", type=int, default=60)
     rrf_search_parser.add_argument("--limit", type=int, default=5)
+    rrf_search_parser.add_argument("--enhance", type=str, choices=["spell", "rewrite", "expand"], help="Query enhancement method")
 
 
 
@@ -40,7 +42,19 @@ def main() -> None:
         case "rrf-search":
             movies = load_movies()
             hybrid_search = HybridSearch(movies)
-            results = hybrid_search.rrf_search(args.query, args.k, args.limit)
+            query = args.query
+            enhanced = None
+            if args.enhance == "spell":
+                enhanced = llm_spell_check(query)
+            elif args.enhance == "rewrite":
+                enhanced = llm_rewrite(query)
+            elif args.enhance == "expand":
+                enhanced = llm_expand(query)
+
+            if enhanced is not None:
+                print(f"Enhanced query ({args.enhance}): '{query}' -> '{enhanced}'\n")
+            query = enhanced
+            results = hybrid_search.rrf_search(query, args.k, args.limit)
             for i, result in enumerate(results[:args.limit], start=1):
                 print(f"{i}. {result['title']}\n  RRF Score: {result['rrf_score']:.3f}\n  BM25 Rank: {result['bm25_rank']}, Semantic Rank: {result['semantic_rank']}\n  {result['description'][:100]}...")
 
