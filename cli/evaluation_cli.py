@@ -29,16 +29,13 @@ def main():
         results = hybrid_search.rrf_search(query, k=60, limit=limit)
         retrieved_titles = [r["title"] for r in results]
         count = len(set(retrieved_titles) & set(relevant_docs))
-        print("DEBUG test_case:", test_case)
-        print("DEBUG num results:", len(results))
         precision = count / len(results)
+        recall = count / len(test_case["relevant_docs"])
         print(f"- Query: {query}")
         print(f"  - Precision@{limit}: {precision:.4f}")
+        print(f"  - Recall@{limit}: {recall:.4f}")
         print(f"  - Retrieved: {', '.join(retrieved_titles)}")
         print(f"  - Relevant: {', '.join(relevant_docs)}")
-    
-    
-
     
     
 
