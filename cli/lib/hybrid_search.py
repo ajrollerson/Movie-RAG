@@ -100,5 +100,5 @@ class HybridSearch:
                 combined_results[id]["rrf_score"] += rrf_score(rank, k)
 
         
-        return sorted(combined_results.values(), key=lambda x: x["rrf_score"], reverse=True)
+        return sorted(combined_results.values(), key=lambda x: x["rrf_score"], reverse=True)[:limit]
         
