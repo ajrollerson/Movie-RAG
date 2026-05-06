@@ -1,7 +1,7 @@
 import argparse
 from lib.hybrid_search import HybridSearch
 from lib.search_utils import load_movies
-from lib.query_enhancement import llm_ag, llm_ags
+from lib.query_enhancement import llm_ag, llm_ags, llm_agc
 
 def main():
     parser = argparse.ArgumentParser(description="Retrieval Augmented Generation CLI")
@@ -12,10 +12,15 @@ def main():
     rag_parser.add_argument("-k", type=int, default=60)
     rag_parser.add_argument("--limit", type=int, default=5)
 
-    summarise_parser = subparsers.add_parser("summarize", help="Perform RAG (search + generate a summary)")
-    summarise_parser.add_argument("query", type=str, help="Search query for RAG")
-    summarise_parser.add_argument("-k", type=int, default=60)
-    summarise_parser.add_argument("--limit", type=int, default=5)
+    summarise_rag_parser = subparsers.add_parser("summarize", help="Perform RAG (search + generate a summary)")
+    summarise_rag_parser.add_argument("query", type=str, help="Search query for RAG")
+    summarise_rag_parser.add_argument("-k", type=int, default=60)
+    summarise_rag_parser.add_argument("--limit", type=int, default=5)
+
+    citations_rag_parser = subparsers.add_parser("citations", help="Perform RAG (search + generate answer with citations)")
+    citations_rag_parser.add_argument("query", type=str, help="Search query for RAG")
+    citations_rag_parser.add_argument("-k", type=int, default=60)
+    citations_rag_parser.add_argument("--limit", type=int, default=5)
 
     args = parser.parse_args()
 
@@ -43,6 +48,20 @@ def main():
                 print(f"- {result["title"]}")
             print("LLM Summary:")
             print(f"{response}")
+
+        case "citations":
+            query = args.query
+            movies = load_movies()
+            hybrid_search = HybridSearch(movies)
+            results = hybrid_search.rrf_search(query, args.k, args.limit)
+            response = llm_agc(query, results)
+            print("Search Results:")
+            for result in results:
+                print(f"- {result["title"]}")
+            print("LLM Answer:")
+            print(f"{response}")
+
+        
 
 
         case _:

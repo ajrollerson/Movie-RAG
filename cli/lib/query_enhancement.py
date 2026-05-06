@@ -2,7 +2,7 @@ import os
 import json
 from dotenv import load_dotenv
 from google import genai
-from .llm_prompts import spell_checker, rewriter, expander, rerank, batch, evaluate, rag_prompt, summary_rag_prompt
+from .llm_prompts import spell_checker, rewriter, expander, rerank, batch, evaluate, rag_prompt, summary_rag_prompt, citations_rag_prompt
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -117,3 +117,16 @@ def llm_ags(query, results):
 
     answer = (response.text or "").strip().strip('"')
     return answer if answer else query
+
+def llm_agc(query, results):
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=citations_rag_prompt.format(
+            query=query,
+            documents=results_to_doc_list_str(results)
+            ),
+    )
+
+    answer = (response.text or "").strip().strip('"')
+    return answer if answer else query
+
