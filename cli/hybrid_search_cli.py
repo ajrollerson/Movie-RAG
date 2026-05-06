@@ -3,7 +3,7 @@ import time
 from sentence_transformers import CrossEncoder
 from lib.hybrid_search import HybridSearch
 from lib.search_utils import normalize, load_movies
-from lib.query_enhancement import llm_spell_check, llm_rewrite, llm_expand, llm_rerank, llm_batch
+from lib.query_enhancement import llm_spell_check, llm_rewrite, llm_expand, llm_rerank, llm_batch, llm_evaluate
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Hybrid Search CLI")
@@ -23,7 +23,7 @@ def main() -> None:
     rrf_search_parser.add_argument("--limit", type=int, default=5)
     rrf_search_parser.add_argument("--enhance", type=str, choices=["spell", "rewrite", "expand"], help="Query enhancement method")
     rrf_search_parser.add_argument("--rerank-method", default=None, type=str, choices=["individual", "batch", "cross_encoder"], help="Rerank method")
-
+    rrf_search_parser.add_argument("--evaluate", action="store_true", help="Provides LLM evaluation")
 
 
     args = parser.parse_args()
@@ -95,6 +95,12 @@ def main() -> None:
             else:
                 for i, result in enumerate(results[:args.limit], start=1):
                     print(f"{i}. {result['title']}\n  RRF Score: {result['rrf_score']:.3f}\n  BM25 Rank: {result['bm25_rank']}, Semantic Rank: {result['semantic_rank']}\n  {result['description'][:100]}...")
+            if args.evaluate:
+                evaluated_results = llm_evaluate(query, results)
+                for i, score in enumerate(evaluated_results):
+                    results[i]["rating"] = score
+                for i, result in enumerate(results, start=1):
+                    print(f"{i}. {result["title"]}: {result["rating"]}/3")
 
 
         case _:

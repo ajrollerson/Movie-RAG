@@ -2,7 +2,7 @@ import os
 import json
 from dotenv import load_dotenv
 from google import genai
-from .llm_prompts import spell_checker, rewriter, expander, rerank, batch
+from .llm_prompts import spell_checker, rewriter, expander, rerank, batch, evaluate
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -78,3 +78,19 @@ def llm_batch(query, results):
         text = text[4:].strip()
     json_data = json.loads(text)
     return json_data
+
+def llm_evaluate(query, results):
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=evaluate.format(
+            query=query,
+            formatted_results=chr(10).join(results_to_doc_list_str(results))
+            ),
+    )
+
+    text = response.text.strip().strip("`").strip()
+    if text.startswith("json"):
+        text = text[4:].strip()
+    json_data = json.loads(text)
+    return json_data
+
