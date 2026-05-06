@@ -31,9 +31,11 @@ def main():
         count = len(set(retrieved_titles) & set(relevant_docs))
         precision = count / len(results)
         recall = count / len(test_case["relevant_docs"])
+        f1 = 2 * (precision * recall) / (precision + recall)
         print(f"- Query: {query}")
         print(f"  - Precision@{limit}: {precision:.4f}")
         print(f"  - Recall@{limit}: {recall:.4f}")
+        print(f"  - F1 Score: {f1:.4f}")
         print(f"  - Retrieved: {', '.join(retrieved_titles)}")
         print(f"  - Relevant: {', '.join(relevant_docs)}")
     
