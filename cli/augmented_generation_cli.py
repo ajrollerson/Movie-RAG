@@ -1,7 +1,7 @@
 import argparse
 from lib.hybrid_search import HybridSearch
 from lib.search_utils import load_movies
-from lib.query_enhancement import llm_ag, llm_ags, llm_agc
+from lib.query_enhancement import llm_ag, llm_ags, llm_agc, llm_agq
 
 def main():
     parser = argparse.ArgumentParser(description="Retrieval Augmented Generation CLI")
@@ -21,6 +21,11 @@ def main():
     citations_rag_parser.add_argument("query", type=str, help="Search query for RAG")
     citations_rag_parser.add_argument("-k", type=int, default=60)
     citations_rag_parser.add_argument("--limit", type=int, default=5)
+
+    questions_rag_parser = subparsers.add_parser("question", help="Perform RAG (search + generate answer based on the user's question")
+    questions_rag_parser.add_argument("query", type=str, help="Search query for RAG")
+    questions_rag_parser.add_argument("-k", type=int, default=60)
+    questions_rag_parser.add_argument("--limit", type=int, default=5)
 
     args = parser.parse_args()
 
@@ -59,6 +64,18 @@ def main():
             for result in results:
                 print(f"- {result["title"]}")
             print("LLM Answer:")
+            print(f"{response}")
+
+        case "question":
+            query = args.query
+            movies = load_movies()
+            hybrid_search = HybridSearch(movies)
+            results = hybrid_search.rrf_search(query, args.k, args.limit)
+            response = llm_agq(query, results)
+            print("Search Results:")
+            for result in results:
+                print(f"- {result["title"]}")
+            print("Answer:")
             print(f"{response}")
 
         
