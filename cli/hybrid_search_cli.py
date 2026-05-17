@@ -73,6 +73,8 @@ def main() -> None:
                 print(f"Re-ranking top {args.limit} results using individual method...")
                 print(f"Reciprocal Rank Fusion Results for '{query}' (k={args.k}):")
                 for i, result in enumerate(top_results, start=1):
+                    if result['image_rank'] == 0:
+                        result['image_rank'] = "N/A"
                     print(f"{i}. {result['title']}\n  Re-rank Score: {result['rerank_score']:.3f}/10\n  RRF Score: {result['rrf_score']:.3f}\n  BM25 Rank: {result['bm25_rank']}, Semantic Rank: {result['semantic_rank']}, Image Rank: {result['image_rank']}\n  {result['description'][:100]}...")
             elif args.rerank_method == "batch":
                 ranked_ids = llm_batch(query, results)
@@ -81,6 +83,8 @@ def main() -> None:
                 print(f"Re-ranking top {args.limit} results using batch method...")
                 print(f"Reciprocal Rank Fusion Results for '{query}' (k={args.k}):")
                 for i, result in enumerate(ranked[:args.limit], start=1):
+                    if result['image_rank'] == 0:
+                        result['image_rank'] = "N/A"
                     print(f"{i}. {result['title']}\n  Re-rank Rank: {i}\n  RRF Score: {result['rrf_score']:.3f}\n  BM25 Rank: {result['bm25_rank']}, Semantic Rank: {result['semantic_rank']}, Image Rank: {result['image_rank']}\n  {result['description'][:100]}...")
             elif args.rerank_method == "cross_encoder":
                 pairs = []
@@ -94,10 +98,14 @@ def main() -> None:
                 print(f"Re-ranking top {args.limit} results using cross_encoder method...")
                 print(f"Reciprocal Rank Fusion Results for '{query}' (k={args.k}):")
                 for i, result in enumerate(results[:args.limit], start=1):
+                    if result['image_rank'] == 0:
+                        result['image_rank'] = "N/A"
                     print(f"{i}.  {result['title']}\n   Cross Encoder Score: {result['cross_encoder_score']:.3f}\n   RRF Score: {result['rrf_score']:.3f}\n   BM25 Rank: {result['bm25_rank']},  Semantic Rank: {result['semantic_rank']}, Image Rank: {result['image_rank']}\n   {result['description'][:100]}...")
 
             else:
                 for i, result in enumerate(results[:args.limit], start=1):
+                    if result['image_rank'] == 0:
+                        result['image_rank'] = "N/A"
                     print(f"{i}. {result['title']}\n  RRF Score: {result['rrf_score']:.3f}\n  BM25 Rank: {result['bm25_rank']}, Semantic Rank: {result['semantic_rank']}, Image Rank: {result['image_rank']}\n  {result['description'][:100]}...")
             if args.evaluate:
                 evaluated_results = llm_evaluate(query, results)
