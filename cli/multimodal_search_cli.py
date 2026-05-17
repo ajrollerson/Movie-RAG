@@ -10,7 +10,7 @@ def main():
     verify_parser.add_argument("image", help="Image for the embedding")
 
     image_search_parser = subparsers.add_parser("image_search", help="Searches using an image")
-    image_search_parser.add_argument("image", help="Image for the search")
+    image_search_parser.add_argument("image", help="Search image")
 
     args = parser.parse_args()
 

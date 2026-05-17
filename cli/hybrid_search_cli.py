@@ -21,6 +21,7 @@ def main() -> None:
     rrf_search_parser.add_argument("query", type=str, help="Query text")
     rrf_search_parser.add_argument("-k", type=int, default=60)
     rrf_search_parser.add_argument("--limit", type=int, default=5)
+    rrf_search_parser.add_argument("--image", help="Optional search image")
     rrf_search_parser.add_argument("--enhance", type=str, choices=["spell", "rewrite", "expand"], help="Query enhancement method")
     rrf_search_parser.add_argument("--rerank-method", default=None, type=str, choices=["individual", "batch", "cross_encoder"], help="Rerank method")
     rrf_search_parser.add_argument("--evaluate", action="store_true", help="Provides LLM evaluation")
@@ -59,7 +60,10 @@ def main() -> None:
             limit = args.limit
             if args.rerank_method == "individual" or args.rerank_method == "batch" or args.rerank_method == "cross_encoder":
                 limit = args.limit * 5
-            results = hybrid_search.rrf_search(query, args.k, limit)
+            if args.image:
+                results = hybrid_search.rrf_search(query, args.k, limit, args.image)
+            else:
+                results = hybrid_search.rrf_search(query, args.k, limit)
             if args.rerank_method == "individual":
                 for result in results:
                     result["rerank_score"] = llm_rerank(query, result)
@@ -69,7 +73,7 @@ def main() -> None:
                 print(f"Re-ranking top {args.limit} results using individual method...")
                 print(f"Reciprocal Rank Fusion Results for '{query}' (k={args.k}):")
                 for i, result in enumerate(top_results, start=1):
-                    print(f"{i}. {result['title']}\n  Re-rank Score: {result['rerank_score']:.3f}/10\n  RRF Score: {result['rrf_score']:.3f}\n  BM25 Rank: {result['bm25_rank']}, Semantic Rank: {result['semantic_rank']}\n  {result['description'][:100]}...")
+                    print(f"{i}. {result['title']}\n  Re-rank Score: {result['rerank_score']:.3f}/10\n  RRF Score: {result['rrf_score']:.3f}\n  BM25 Rank: {result['bm25_rank']}, Semantic Rank: {result['semantic_rank']}, Image Rank: {result['image_rank']}\n  {result['description'][:100]}...")
             elif args.rerank_method == "batch":
                 ranked_ids = llm_batch(query, results)
                 lookup = {result["id"]: result for result in results}
@@ -77,7 +81,7 @@ def main() -> None:
                 print(f"Re-ranking top {args.limit} results using batch method...")
                 print(f"Reciprocal Rank Fusion Results for '{query}' (k={args.k}):")
                 for i, result in enumerate(ranked[:args.limit], start=1):
-                    print(f"{i}. {result['title']}\n  Re-rank Rank: {i}\n  RRF Score: {result['rrf_score']:.3f}\n  BM25 Rank: {result['bm25_rank']}, Semantic Rank: {result['semantic_rank']}\n  {result['description'][:100]}...")
+                    print(f"{i}. {result['title']}\n  Re-rank Rank: {i}\n  RRF Score: {result['rrf_score']:.3f}\n  BM25 Rank: {result['bm25_rank']}, Semantic Rank: {result['semantic_rank']}, Image Rank: {result['image_rank']}\n  {result['description'][:100]}...")
             elif args.rerank_method == "cross_encoder":
                 pairs = []
                 cross_encoder = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L2-v2")
@@ -90,11 +94,11 @@ def main() -> None:
                 print(f"Re-ranking top {args.limit} results using cross_encoder method...")
                 print(f"Reciprocal Rank Fusion Results for '{query}' (k={args.k}):")
                 for i, result in enumerate(results[:args.limit], start=1):
-                    print(f"{i}.  {result['title']}\n   Cross Encoder Score: {result['cross_encoder_score']:.3f}\n   RRF Score: {result['rrf_score']:.3f}\n   BM25 Rank: {result['bm25_rank']},  Semantic Rank: {result['semantic_rank']}\n   {result['description'][:100]}...")
+                    print(f"{i}.  {result['title']}\n   Cross Encoder Score: {result['cross_encoder_score']:.3f}\n   RRF Score: {result['rrf_score']:.3f}\n   BM25 Rank: {result['bm25_rank']},  Semantic Rank: {result['semantic_rank']}, Image Rank: {result['image_rank']}\n   {result['description'][:100]}...")
 
             else:
                 for i, result in enumerate(results[:args.limit], start=1):
-                    print(f"{i}. {result['title']}\n  RRF Score: {result['rrf_score']:.3f}\n  BM25 Rank: {result['bm25_rank']}, Semantic Rank: {result['semantic_rank']}\n  {result['description'][:100]}...")
+                    print(f"{i}. {result['title']}\n  RRF Score: {result['rrf_score']:.3f}\n  BM25 Rank: {result['bm25_rank']}, Semantic Rank: {result['semantic_rank']}, Image Rank: {result['image_rank']}\n  {result['description'][:100]}...")
             if args.evaluate:
                 evaluated_results = llm_evaluate(query, results)
                 for i, score in enumerate(evaluated_results):

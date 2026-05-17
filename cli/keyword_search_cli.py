@@ -86,7 +86,7 @@ def main() -> None:
             inverted_index.load()
             results = inverted_index.bm25_search(args.query)
             for index, result in enumerate(results, start=1):
-                print(f"{index}. ({result["doc_id"]}) {result["title"]} - Score: {result["score"]:.2f}")
+                print(f"{index}. ({result["id"]}) {result["title"]} - Score: {result["score"]:.2f}")
 
 
         case _:

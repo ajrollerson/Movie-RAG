@@ -28,7 +28,7 @@ class MultimodalSearch:
         embedding = self.model.encode([image])
         return embedding[0]
     
-    def search_with_image(self, image_path):
+    def search_with_image(self, image_path, limit=None):
         image_embedding = self.embed_image(image_path)
         results = []
         for i, text_embedding in enumerate(self.text_embeddings):
